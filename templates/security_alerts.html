@@ -1,0 +1,701 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Security Alerts | AI-SOC</title>
+
+<style>
+:root {
+  --bg: #080d18;
+  --panel: #101827;
+  --panel2: #151f30;
+  --border: #263448;
+  --text: #edf4ff;
+  --muted: #93a4bd;
+  --cyan: #38bdf8;
+  --red: #fb7185;
+  --orange: #fb923c;
+  --yellow: #facc15;
+  --green: #4ade80;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at top left, #12243b 0, transparent 40%),
+    var(--bg);
+  color: var(--text);
+  font: 14px/1.5 Inter, system-ui, Arial, sans-serif;
+}
+
+button, input, select { font: inherit; }
+
+button, select { cursor: pointer; }
+
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.topbar {
+  min-height: 70px;
+  padding: 16px 5%;
+  border-bottom: 1px solid var(--border);
+  background: #0b1220;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #12354a;
+  color: var(--cyan);
+  display: grid;
+  place-items: center;
+  font-size: 23px;
+}
+
+.brand h2 { margin: 0; font-size: 17px; }
+.brand small { color: var(--muted); }
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn {
+  padding: 9px 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+  background: var(--panel2);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn:hover { border-color: var(--cyan); }
+
+.btn.primary {
+  background: #12354a;
+  border-color: #246b8d;
+  color: #bcecff;
+}
+
+.btn.success {
+  border-color: #276749;
+  color: var(--green);
+}
+
+.btn.danger {
+  border-color: #7f3344;
+  color: var(--red);
+}
+
+main {
+  max-width: 1500px;
+  margin: auto;
+  padding: 30px 5% 60px;
+}
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  color: var(--cyan);
+  letter-spacing: 2px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+h1 { font-size: clamp(25px, 4vw, 34px); margin: 5px 0; }
+.subtitle { color: var(--muted); margin: 0; }
+
+.demo-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--yellow);
+  background: #302913;
+  border: 1px solid #62501e;
+  border-radius: 30px;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--yellow);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 22px;
+}
+
+.metric, .panel {
+  background: linear-gradient(145deg, #121c2c, #0e1624);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+}
+
+.metric {
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric:after {
+  content: "";
+  position: absolute;
+  height: 3px;
+  left: 0; right: 0; top: 0;
+  background: var(--accent, var(--cyan));
+  opacity: .8;
+}
+
+.metric-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.metric-icon { font-size: 20px; }
+.metric-value { font-size: 32px; font-weight: 800; margin: 10px 0 2px; }
+.metric-note { color: var(--muted); font-size: 11px; }
+
+.panel { padding: 20px; margin-bottom: 20px; }
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.panel-heading h2 { margin: 0; font-size: 17px; }
+.muted { color: var(--muted); font-size: 12px; }
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) repeat(2, minmax(130px, 1fr)) auto;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.control {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  background: #0a1220;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.control::placeholder { color: #71829b; }
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  min-width: 950px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+thead { background: #0a1220; }
+
+th {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+th, td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #202c3d;
+}
+
+tbody tr:hover { background: #172337; }
+tbody tr:last-child td { border-bottom: none; }
+
+.event-title { font-weight: 700; }
+.event-sub { color: var(--muted); font-size: 11px; margin-top: 3px; }
+.ip { font-family: ui-monospace, monospace; color: #b6dfff; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sev-high, .sev-critical { background: #421b29; color: #ff91a6; }
+.sev-medium { background: #402b13; color: #ffc078; }
+.sev-low { background: #12362c; color: #72e8ac; }
+.status-open { background: #402b13; color: #ffc078; }
+.status-acknowledged { background: #12334a; color: #7dd3fc; }
+.status-resolved { background: #12362c; color: #72e8ac; }
+
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.action-btn {
+  background: #111d2d;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 7px 9px;
+  font-size: 11px;
+}
+
+.action-btn:hover { border-color: var(--cyan); }
+.action-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.empty {
+  text-align: center;
+  padding: 38px 15px;
+  color: var(--muted);
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  max-width: calc(100% - 44px);
+  background: #163328;
+  border: 1px solid #286c4d;
+  color: #b9f7d2;
+  padding: 13px 18px;
+  border-radius: 10px;
+  box-shadow: 0 12px 35px #0008;
+  z-index: 10;
+}
+
+.toast.error {
+  background: #421b29;
+  border-color: #85374b;
+  color: #ffd1d9;
+}
+
+.hidden { display: none !important; }
+
+@media (max-width: 900px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters { grid-template-columns: 1fr 1fr; }
+  .filters input { grid-column: 1 / -1; }
+}
+
+@media (max-width: 520px) {
+  main { padding: 22px 12px 40px; }
+  .topbar { padding: 14px 12px; }
+  .metrics { gap: 9px; }
+  .metric { padding: 13px; }
+  .metric-value { font-size: 26px; }
+  .panel { padding: 13px; }
+  .filters { grid-template-columns: 1fr; }
+  .filters input { grid-column: auto; }
+  .heading { align-items: flex-start; }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">⬡</div>
+    <div>
+      <h2>SENTINEL <span style="color:#38bdf8">SOC</span></h2>
+      <small>Security Operations Center</small>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a class="btn" href="/">← Dashboard</a>
+    <a class="btn" href="/history">History</a>
+    <a class="btn" href="/incidents">Incidents</a>
+    <button class="btn primary" id="refreshBtn" type="button">↻ Refresh</button>
+    <a class="btn" href="/logout">Logout</a>
+  </nav>
+</header>
+
+<main>
+  <section class="heading">
+    <div>
+      <div class="eyebrow">THREAT MONITORING / ALERT CENTER</div>
+      <h1>Security Alerts</h1>
+      <p class="subtitle">Review, prioritize and manage detected security events.</p>
+    </div>
+    <div class="demo-label">
+      <span class="dot"></span>
+      EVENT-BASED MONITORING
+    </div>
+  </section>
+
+  <section class="metrics">
+    <article class="metric" style="--accent:#38bdf8">
+      <div class="metric-top"><span>Total Alerts</span><span class="metric-icon">◈</span></div>
+      <div class="metric-value" id="totalCount">—</div>
+      <div class="metric-note">Recorded non-normal events</div>
+    </article>
+
+    <article class="metric" style="--accent:#fb7185">
+      <div class="metric-top"><span>High / Critical</span><span class="metric-icon">⚠</span></div>
+      <div class="metric-value" id="highCount">—</div>
+      <div class="metric-note">Prioritize investigation</div>
+    </article>
+
+    <article class="metric" style="--accent:#fb923c">
+      <div class="metric-top"><span>Open</span><span class="metric-icon">◷</span></div>
+      <div class="metric-value" id="openCount">—</div>
+      <div class="metric-note">Awaiting review</div>
+    </article>
+
+    <article class="metric" style="--accent:#4ade80">
+      <div class="metric-top"><span>Resolved</span><span class="metric-icon">✓</span></div>
+      <div class="metric-value" id="resolvedCount">—</div>
+      <div class="metric-note">Marked as resolved</div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>Alert Queue</h2>
+        <div class="muted" style="margin-top:5px">
+          Search events and update their investigation status.
+        </div>
+      </div>
+      <span class="muted" id="lastUpdated">Waiting for data…</span>
+    </div>
+
+    <div class="filters">
+      <input class="control" id="searchInput"
+        type="search" placeholder="⌕ Search IP, attack, country or MITRE ID">
+
+      <select class="control" id="severityFilter" aria-label="Filter by severity">
+        <option value="">All severities</option>
+        <option value="Critical">Critical</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <select class="control" id="statusFilter" aria-label="Filter by status">
+        <option value="">All statuses</option>
+        <option value="Open">Open</option>
+        <option value="Acknowledged">Acknowledged</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+
+      <button class="btn" id="clearBtn" type="button">Clear filters</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Severity</th>
+            <th>Security Event</th>
+            <th>Source IP</th>
+            <th>Risk</th>
+            <th>Detected</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="alertsBody">
+          <tr><td colspan="7" class="empty">Loading security alerts…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <span id="resultCount">0 alerts shown</span>
+      <span>Showing up to 500 most recent alerts</span>
+    </div>
+  </section>
+
+  <p class="muted">
+    Alert records are generated from events classified by your existing SOC engine.
+    They are not independent proof of a confirmed attack.
+  </p>
+</main>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+const alertsBody = document.getElementById("alertsBody");
+const searchInput = document.getElementById("searchInput");
+const severityFilter = document.getElementById("severityFilter");
+const statusFilter = document.getElementById("statusFilter");
+
+let alerts = [];
+let toastTimer;
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[ch]);
+}
+
+function showToast(message, isError = false) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.toggle("error", isError);
+  toast.classList.remove("hidden");
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.add("hidden"), 3200);
+}
+
+function dateText(value) {
+  if (!value) return "Unknown";
+  const parsed = new Date(value.replace(" ", "T"));
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString();
+}
+
+function severityClass(value) {
+  const v = String(value || "").toLowerCase();
+  if (v === "critical") return "sev-critical";
+  if (v === "high") return "sev-high";
+  if (v === "medium") return "sev-medium";
+  return "sev-low";
+}
+
+function statusClass(value) {
+  return "status-" + String(value || "open").toLowerCase();
+}
+
+function updateMetrics() {
+  document.getElementById("totalCount").textContent = alerts.length;
+
+  document.getElementById("highCount").textContent =
+    alerts.filter(a => ["High", "Critical"].includes(a.severity)).length;
+
+  document.getElementById("openCount").textContent =
+    alerts.filter(a => a.status === "Open").length;
+
+  document.getElementById("resolvedCount").textContent =
+    alerts.filter(a => a.status === "Resolved").length;
+}
+
+function filteredAlerts() {
+  const query = searchInput.value.trim().toLowerCase();
+  const severity = severityFilter.value;
+  const status = statusFilter.value;
+
+  return alerts.filter(a => {
+    const searchable = [
+      a.ip, a.country, a.attack, a.mitre, a.phase, a.status
+    ].join(" ").toLowerCase();
+
+    return (!query || searchable.includes(query))
+      && (!severity || a.severity === severity)
+      && (!status || a.status === status);
+  });
+}
+
+function renderAlerts() {
+  const list = filteredAlerts();
+
+  document.getElementById("resultCount").textContent =
+    `${list.length} alert${list.length === 1 ? "" : "s"} shown`;
+
+  if (!list.length) {
+    alertsBody.innerHTML =
+      '<tr><td colspan="7" class="empty">No matching alerts found.</td></tr>';
+    return;
+  }
+
+  alertsBody.innerHTML = list.map(a => {
+    const id = Number(a.alert_id);
+    const status = escapeHtml(a.status);
+    const severity = escapeHtml(a.severity || "Low");
+
+    let actionButtons = "";
+
+    if (a.status === "Open") {
+      actionButtons += `
+        <button class="action-btn" data-id="${id}"
+          data-status="Acknowledged">Acknowledge</button>`;
+    }
+
+    if (a.status !== "Resolved") {
+      actionButtons += `
+        <button class="action-btn" data-id="${id}"
+          data-status="Resolved">Resolve</button>`;
+    } else {
+      actionButtons += `
+        <button class="action-btn" data-id="${id}"
+          data-status="Open">Reopen</button>`;
+    }
+
+    return `
+      <tr>
+        <td><span class="badge ${severityClass(a.severity)}">${severity}</span></td>
+        <td>
+          <div class="event-title">${escapeHtml(a.attack || "Security Event")}</div>
+          <div class="event-sub">${escapeHtml(a.country || "Unknown location")}
+            · ${escapeHtml(a.mitre || "No MITRE ID")}</div>
+        </td>
+        <td class="ip">${escapeHtml(a.ip || "Unknown")}</td>
+        <td><strong>${escapeHtml(a.risk ?? 0)}%</strong></td>
+        <td>${escapeHtml(dateText(a.detected_at))}</td>
+        <td><span class="badge ${statusClass(a.status)}">${status}</span></td>
+        <td><div class="actions">${actionButtons}</div></td>
+      </tr>`;
+  }).join("");
+}
+
+async function loadAlerts(showMessage = false) {
+  const refreshBtn = document.getElementById("refreshBtn");
+  refreshBtn.disabled = true;
+
+  try {
+    const response = await fetch("/api/security-alerts", {
+      credentials: "same-origin",
+      headers: { "Accept": "application/json" }
+    });
+
+    if (response.status === 401) {
+      location.href = "/login";
+      return;
+    }
+
+    if (!response.ok) throw new Error("Unable to load alerts.");
+
+    alerts = await response.json();
+
+    updateMetrics();
+    renderAlerts();
+
+    document.getElementById("lastUpdated").textContent =
+      "Updated " + new Date().toLocaleTimeString();
+
+    if (showMessage) showToast("Alerts refreshed.");
+  } catch (error) {
+    alertsBody.innerHTML =
+      '<tr><td colspan="7" class="empty">Could not load alerts. Check the server and try again.</td></tr>';
+    showToast(error.message, true);
+  } finally {
+    refreshBtn.disabled = false;
+  }
+}
+
+async function changeStatus(id, status, button) {
+  button.disabled = true;
+
+  try {
+    const response = await fetch(`/api/security-alerts/${id}`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Could not update alert.");
+    }
+
+    showToast(`Alert #${id} marked ${status.toLowerCase()}.`);
+    await loadAlerts();
+  } catch (error) {
+    button.disabled = false;
+    showToast(error.message, true);
+  }
+}
+
+alertsBody.addEventListener("click", event => {
+  const button = event.target.closest("button[data-status]");
+  if (!button) return;
+
+  changeStatus(
+    Number(button.dataset.id),
+    button.dataset.status,
+    button
+  );
+});
+
+searchInput.addEventListener("input", renderAlerts);
+severityFilter.addEventListener("change", renderAlerts);
+statusFilter.addEventListener("change", renderAlerts);
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  searchInput.value = "";
+  severityFilter.value = "";
+  statusFilter.value = "";
+  renderAlerts();
+});
+
+document.getElementById("refreshBtn").addEventListener("click", () => {
+  loadAlerts(true);
+});
+
+loadAlerts();
+setInterval(() => loadAlerts(), 15000);
+</script>
+</body>
+</html>
